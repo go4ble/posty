@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Chat</h1>
+<form>{% csrf_token %}
+    {{ form.as_p }}
+    <button id="send_msg">Send</button>
+</form>
+<div id="msg_block">
+    {% for msg in msg_list %}
+    <div class="msg">
+        <p>
+            <strong>{{ msg.author }}</strong>:
+            <em>{{ msg.time_stamp }}</em>
+        </p>
+        <p>{{ msg.text }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block script %}
+$(document).ready(function(){
+    // alert("Hello, world!");
+});
+{% endblock %}
