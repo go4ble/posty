@@ -1,6 +1,6 @@
 import models
 from django.shortcuts import render
-import json, time
+import json
 from django.http import HttpResponse
 from django.core import serializers
 from gevent.event import Event
@@ -21,7 +21,6 @@ class Chat(object):
 
     def send(self, request):
         if request.method == 'POST':
-            time.sleep(2)
             form = models.MsgForm(request.POST)
             if form.is_valid():
                 form.save()
