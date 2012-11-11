@@ -8,7 +8,8 @@ from datetime import datetime
 
 class Chat(object):
     def __init__(self):
-        self.buffer = []
+        # at some point, may want to implement a buffer for messages
+        # self.buffer = []
         self.msg_event = Event()
 
     def index(self, request):
@@ -24,6 +25,8 @@ class Chat(object):
             form = models.MsgForm(request.POST)
             if form.is_valid():
                 form.save()
+                # tell everyone who's waiting on msg_event that a msg was just
+                # posted
                 self.msg_event.set()
                 self.msg_event.clear()
                 return HttpResponse(json.dumps(True), mimetype='application/json')
@@ -31,27 +34,12 @@ class Chat(object):
 
     def update(self, request):
         check_time = datetime.now()
+        # wait for next msg post
         self.msg_event.wait()
         msg_list = models.Msg.objects.filter(time_stamp__gte=check_time)
-        #return HttpResponse(write_json(msg_list), mimetype='application/json')
         return HttpResponse(serializers.serialize('xml', msg_list), mimetype='text/xml')
 
 chat = Chat()
 index = chat.index
 send = chat.send
 update = chat.update
-
-'''
-def write_json(msg_list):
-    value = '"msg_list": ['
-    for i in range(0, len(msg_list)):
-        msg = msg_list[i]
-        value += '{"author": "' + msg.author
-        value += '", "text": "' + msg.text
-        value += '", "time_stamp": "' + msg.time_stamp.__str__()
-        value += '"}'
-        if i != len(msg_list) - 1:
-            value += ','
-    value += ']'
-    return value
-'''

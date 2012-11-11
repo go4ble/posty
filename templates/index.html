@@ -21,6 +21,11 @@
 
 {% block script %}
 $(document).ready(function(){
+    /* On clicking the 'Send' button:
+     *  disable the send button (avoid double clicking)
+     *  do an ajax post to the 'send/' view
+     *  on success [function(data)], clear 'text' text box and enable 'Send' button
+     */
     $("#send_msg").click(function() {
         $("#send_msg").attr("disabled", "disabled");
         $.post("send/", {
@@ -33,6 +38,12 @@ $(document).ready(function(){
             });
     });
 
+    /* Automatically makes an ajax call to 'update/' view
+     * times out after 40s
+     * after timeout or sucess, recursively calls itself again
+     * throws retrieved data on top of current content
+     * most of the code involves parsing the xml
+     */
     (function update() {
         $.ajax({url: "update/", success: function(data) {
             $(data).find("object").each(function() {
@@ -48,7 +59,7 @@ $(document).ready(function(){
         }, dataType: "xml", complete: update, timeout: 40000});
     })();
     
-    // the following is all for csrf stuff
+    // the remaining is all for csrf stuff
     // copied from https://docs.djangoproject.com/en/dev/ref/contrib/csrf/
     function getCookie(name) {
         var cookieValue = null;
