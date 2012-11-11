@@ -18,4 +18,6 @@ urlpatterns = patterns('',
 
 urlpatterns += patterns('chat.views',
 	url(r'^$', 'index'),
+	url(r'^send/$', 'send'),
+	url(r'^update/$', 'update'),
 )

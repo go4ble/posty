@@ -4,8 +4,8 @@
 <h1>Chat</h1>
 <form>{% csrf_token %}
     {{ form.as_p }}
-    <button id="send_msg">Send</button>
 </form>
+<button id="send_msg">Send</button>
 <div id="msg_block">
     {% for msg in msg_list %}
     <div class="msg">
@@ -21,6 +21,65 @@
 
 {% block script %}
 $(document).ready(function(){
-    // alert("Hello, world!");
+    $("#send_msg").click(function() {
+        $("#send_msg").attr("disabled", "disabled");
+        $.post("send/", {
+                author: $("#id_author").val(),
+                text: $("#id_text").val()
+            },
+            function(data) {
+                $("#id_text").val("");
+                $("#send_msg").removeAttr("disabled");
+            });
+    });
+
+    (function update() {
+        $.ajax({url: "update/", success: function(data) {
+            $(data).find("object").each(function() {
+                var msg_text = "<div class=\"msg\"><p><strong>";
+                msg_text += $(this).find("[name='author']").text();
+                msg_text += "</strong>: <em>";
+                msg_text += $(this).find("[name='time_stamp']").text();
+                msg_text += "</em></p><p>";
+                msg_text += $(this).find("[name='text']").text();
+                msg_text += "</p></div>";
+                $("#msg_block").prepend(msg_text);
+            });
+        }, dataType: "xml", complete: update, timeout: 40000});
+    })();
+    
+    // the following is all for csrf stuff
+    // copied from https://docs.djangoproject.com/en/dev/ref/contrib/csrf/
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+    return cookieValue;
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        crossDomain: false, // obviates need for sameOrigin test
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
 });
 {% endblock %}
