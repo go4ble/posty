@@ -1,2 +1,2 @@
 #posty
-experimental chat client
+experimenting with long polling
